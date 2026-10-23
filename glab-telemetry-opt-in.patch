@@ -1,0 +1,54 @@
+Send usage data to the GitLab instance only after the user opts in
+(glab config set telemetry true, or GLAB_SEND_TELEMETRY=1).
+
+diff -ru a/cmd/glab/telemetry.go b/cmd/glab/telemetry.go
+--- a/cmd/glab/telemetry.go	2026-10-23 18:11:36.056665492 +0200
++++ b/cmd/glab/telemetry.go	2026-10-23 18:11:36.077969367 +0200
+@@ -72,7 +72,7 @@
+ 		}
+ 	}
+ 
+-	return true
++	return false
+ }
+ 
+ // parseCommand parses a command string and returns components
+diff -ru a/cmd/glab/telemetry_test.go b/cmd/glab/telemetry_test.go
+--- a/cmd/glab/telemetry_test.go	2026-10-23 18:11:36.063332159 +0200
++++ b/cmd/glab/telemetry_test.go	2026-10-23 18:11:36.082284406 +0200
+@@ -626,18 +626,18 @@
+ 			expectedResult: false,
+ 		},
+ 		{
+-			name:           "enabled with empty value",
++			name:           "disabled with empty value",
+ 			configYaml:     "telemetry: ''",
+-			expectedResult: true,
++			expectedResult: false,
+ 		},
+ 		{
+-			name:           "enabled with other value",
++			name:           "disabled with other value",
+ 			configYaml:     "telemetry: something",
+-			expectedResult: true,
++			expectedResult: false,
+ 		},
+ 		{
+ 			name:           "no config value set",
+-			expectedResult: true,
++			expectedResult: false,
+ 		},
+ 	}
+ 
+diff -ru a/internal/config/schema.go b/internal/config/schema.go
+--- a/internal/config/schema.go	2026-10-23 18:11:36.053332159 +0200
++++ b/internal/config/schema.go	2026-10-23 18:11:36.072409227 +0200
+@@ -163,7 +163,7 @@
+ 	},
+ 	{
+ 		Name: "telemetry", Scope: ScopeGlobal, Type: TypeBool,
+-		Default: "true", UserSettable: true,
++		Default: "false", UserSettable: true,
+ 		EnvVars:     []string{"GLAB_SEND_TELEMETRY"},
+ 		Description: "Set to false (0) to disable sending usage data to your GitLab instance or true (1) to enable.\nSee https://docs.gitlab.com/administration/settings/usage_statistics/\nfor more information",
+ 	},
